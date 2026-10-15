@@ -19,7 +19,7 @@ A professional, responsive portfolio website built with **vanilla HTML, CSS, and
 ### Sections
 
 1. **Hero** — Name, headline, introduction, and call-to-action buttons
-2. **About Me** — Professional focus on web application security, VAPT, authorized penetration testing, and WordPress security
+2. **About Me** — Professional focus on web application security, VAPT, and WordPress security
 3. **Projects & Tools** — Open-source security tools and audits:
    - [Authentication and Access Control Audit](https://github.com/samihathecss/auth-access-control-audit)
    - [Phishing Email Analyzer](https://github.com/samihathecss/phishing-email-analyser)

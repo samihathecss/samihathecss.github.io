@@ -198,9 +198,33 @@ h1, h2, h3, h4 {
 }
 
 .hero-container {
-  text-align: center;
-  max-width: 760px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  max-width: 1000px;
+  width: 90%;
   margin: 0 auto;
+}
+
+.hero-text {
+  flex: 1;
+  text-align: left;
+}
+
+.hero-image {
+  flex: 0 0 280px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-pic {
+  width: 240px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #00d4ff;
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
 }
 
 .hero-name {
@@ -517,6 +541,25 @@ h1, h2, h3, h4 {
     flex-direction: column;
     gap: 0.75rem;
     align-items: center;
+  }
+
+  .hero-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text {
+    text-align: center;
+  }
+
+  .hero-image {
+    flex: 0 0 auto;
+    margin-top: 1.5rem;
+  }
+
+  .profile-pic {
+    width: 200px;
+    height: 200px;
   }
 
   .btn {
