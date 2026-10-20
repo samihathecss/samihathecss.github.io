@@ -24,6 +24,8 @@ A professional, responsive portfolio website built with **vanilla HTML, CSS, and
    - [Authentication and Access Control Audit](https://github.com/samihathecss/auth-access-control-audit)
    - [Phishing Email Analyzer](https://github.com/samihathecss/phishing-email-analyser)
    - [WordPress Migration Integrity Verifier](https://github.com/samihathecss/wp-migration-integrity-verifier)
+   - [WP Forensics & Recovery Assistant](https://github.com/samihathecss/wp-forensics-recovery-assistant)
+   - [WP Plugin Risk & Hardening Auditor](https://github.com/samihathecss/wp-plugin-risk-hardening-auditor)
 4. **Services** — Web Application Security Assessment, Authorized VAPT, WordPress Security, WordPress Malware Removal, WordPress Migration
 5. **Contact** — Fiverr and GitHub links
 
