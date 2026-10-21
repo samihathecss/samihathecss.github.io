@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Plugin Risk &amp; Hardening Auditor - Browser Demo</title>
+    <meta name="description" content="Browser demo of the WP Plugin Risk &amp; Hardening Auditor. Runs the project's own Python scanner locally in your browser.">
+    <style>
+        :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text-muted:#94a3b8; --border:#334155; --accent:#3b82f6; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#06b6d4; }
+        *{box-sizing:border-box;}
+        body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Ubuntu,Cantarell,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:var(--text);line-height:1.6;min-height:100vh;}
+        header{padding:2rem 1rem 1rem;text-align:center;border-bottom:1px solid var(--border);}
+        header h1{margin:0 0 .5rem;font-size:1.8rem;font-weight:600;}
+        header p{margin:0;color:var(--text-muted);font-size:.9rem;}
+        main{max-width:1100px;margin:0 auto;padding:2rem 1rem;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:2rem;}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;box-shadow:0 4px 6px rgba(0,0,0,.3);}
+        .card h2{margin:0 0 1rem;font-size:1.2rem;font-weight:600;}
+        .upload-area{border:2px dashed var(--border);border-radius:6px;padding:1.5rem;text-align:center;transition:.2s ease;background:rgba(59,130,246,.05);}
+        .upload-area.dragover{border-color:var(--accent);background:rgba(59,130,246,.1);}
+        input[type=file]{display:none;}
+        .upload-label{display:inline-block;padding:.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:500;margin:.25rem;}
+        .upload-label.secondary{background:var(--border);color:var(--text);}
+        .upload-label:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+        .file-info{margin-top:.75rem;font-size:.875rem;color:var(--text-muted);word-break:break-all;}
+        button{padding:.625rem 1.25rem;background:var(--accent);color:white;border:none;border-radius:4px;font-size:.9rem;font-weight:500;cursor:pointer;}
+        button:disabled{opacity:.5;cursor:not-allowed;}
+        .btn-secondary{background:var(--border);}
+        .actions{display:flex;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+        .status{padding:1rem;border-radius:6px;border:1px solid var(--border);background:rgba(148,163,184,.1);margin:1rem 0;font-size:.9rem;word-break:break-word;}
+        .status.success{border-color:var(--success);background:rgba(16,185,129,.1);color:#86efac;}
+        .status.warning{border-color:var(--warning);background:rgba(245,158,11,.1);color:#fbbf24;}
+        .status.danger{border-color:var(--danger);background:rgba(239,68,68,.1);color:#fca5a5;}
+        .status.info{border-color:var(--info);background:rgba(6,182,212,.1);color:#67e8f9;}
+        .privacy{background:rgba(16,185,129,.1);border:1px solid var(--success);border-radius:6px;padding:1rem;margin:0 0 1.5rem;font-size:.9rem;color:#a7f3d0;}
+        .privacy strong{color:#d1fae5;}
+        .limits{list-style:none;margin:0;padding:0;font-size:.875rem;}
+        .limits li{padding:.5rem 0;border-bottom:1px dashed rgba(148,163,184,.25);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+        .limits li:last-child{border-bottom:none;}
+        .limits .value{color:#cbd5e1;font-family:ui-monospace,Menlo,Consolas,monospace;}
+        .note{color:var(--text-muted);font-size:.8rem;margin:.75rem 0 0;}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin:1rem 0;}
+        .summary-item{padding:.75rem;background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:4px;text-align:center;}
+        .summary-item .count{display:block;font-size:1.4rem;font-weight:600;margin-bottom:.25rem;}
+        .summary-item .label{display:block;font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+        .table-wrapper{overflow-x:auto;border:1px solid var(--border);border-radius:6px;margin:1rem 0;}
+        table{width:100%;border-collapse:collapse;font-size:.8rem;}
+        thead{background:rgba(15,23,42,.7);}
+        th,td{padding:.5rem;text-align:left;border:1px solid var(--border);vertical-align:top;}
+        th{font-weight:600;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+        td.path{word-break:break-all;min-width:160px;}
+        td.rule{font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap;}
+        .badge{display:inline-block;padding:.125rem .5rem;border-radius:12px;font-size:.72rem;font-weight:500;white-space:nowrap;}
+        .badge.safe{background:rgba(16,185,129,.2);color:#86efac;}
+        .badge.warn{background:rgba(245,158,11,.2);color:#fbbf24;}
+        .badge.unsafe{background:rgba(239,68,68,.2);color:#fca5a5;}
+        .badge.info{background:rgba(6,182,212,.2);color:#67e8f9;}
+        .badge.neutral{background:rgba(148,163,184,.2);color:#cbd5e1;}
+        .badge.critical{background:rgba(239,68,68,.35);color:#fecaca;}
+        .notes{margin:.5rem 0 0;padding-left:1.25rem;font-size:.85rem;}
+        .notes li{margin-bottom:.35rem;}
+        .limitations{background:rgba(245,158,11,.1);border:1px solid var(--warning);border-radius:6px;padding:1rem;margin:1.5rem 0;}
+        .limitations h3{margin:0 0 .5rem;color:#fbbf24;}
+        .limitations ul{margin:0;padding-left:1.25rem;}
+        .limitations li{margin-bottom:.35rem;font-size:.875rem;}
+        .rules{list-style:none;margin:.5rem 0 0;padding:0;font-size:.85rem;}
+        .rules li{padding:.35rem 0;display:flex;gap:.75rem;flex-wrap:wrap;align-items:baseline;}
+        .rules code{font-family:ui-monospace,Menlo,Consolas,monospace;color:#cbd5e1;}
+        footer{text-align:center;color:var(--text-muted);font-size:.8rem;padding:1.5rem 1rem 2rem;}
+        @media (max-width:480px){
+            header h1{font-size:1.4rem;}
+            .card{padding:1.25rem;}
+            .upload-area{padding:1.25rem .75rem;}
+            .actions{gap:.5rem;}
+            .actions button{flex:1 1 auto;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WP Plugin Risk &amp; Hardening Auditor</h1>
+        <p>Browser Demo &mdash; the project's own Python scanner, running locally in your browser</p>
+    </header>
+    <main>
+        <div class="privacy" role="note">
+            <strong>Local processing only.</strong> The plugin ZIP or PHP files you select are read inside your own
+            browser using WebAssembly (Pyodide). No plugin source, file name, or scan result is ever uploaded to a
+            server. The only network requests this page makes are to download the public Pyodide and JSZip libraries
+            and the small vendored copy of the auditor's own Python modules.
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Plugin Source</h2>
+                <div class="upload-area" id="upload-area">
+                    <button type="button" class="upload-label" id="choose-zip-btn">Choose Plugin ZIP</button>
+                    <button type="button" class="upload-label secondary" id="choose-php-btn">Choose PHP Files</button>
+                    <div style="margin-top:.5rem;">or drag and drop a ZIP or PHP files here</div>
+                    <div class="file-info" id="file-info">Nothing selected</div>
+                </div>
+                <input type="file" id="zip-input" accept=".zip,application/zip,application/x-zip-compressed">
+                <input type="file" id="php-input" accept=".php,text/x-php,application/x-php" multiple>
+                <p class="note">
+                    A plugin ZIP archive, or one or more individual <code>.php</code> files. Only PHP files are
+                    analysed; other archive entries are listed by the safety check but never read.
+                </p>
+            </section>
+
+            <section class="card">
+                <h2>Safety Limits</h2>
+                <ul class="limits">
+                    <li><span>Maximum upload size</span><span class="value">25 MB</span></li>
+                    <li><span>Maximum archive entries</span><span class="value">2,000</span></li>
+                    <li><span>Maximum expanded size</span><span class="value">20 MB</span></li>
+                    <li><span>Maximum compression ratio</span><span class="value">100:1</span></li>
+                    <li><span>Maximum PHP files scanned</span><span class="value">500</span></li>
+                    <li><span>Maximum size per PHP file</span><span class="value">1 MB</span></li>
+                </ul>
+                <p class="note">An archive that breaks any of these rules is rejected before a single entry is read.</p>
+            </section>
+        </div>
+
+        <div class="actions">
+            <button id="scan-btn" disabled>Scan Plugin</button>
+            <button id="clear-btn" class="btn-secondary">Clear</button>
+        </div>
+        <p class="note" id="feature-note">
+            The scan runs the upstream <code>scanner.scan_php_text()</code>, <code>file_scanner.scan_php_file()</code>,
+            <code>scoring.score_findings()</code> and <code>reporting.build_report()</code> implementations. A JSON
+            report with the upstream schema can be downloaded when a scan finishes.
+        </p>
+
+        <div id="status" class="status" role="status" aria-live="polite" style="display:none;"></div>
+
+        <section class="card" id="results-section" style="display:none;">
+            <h2>Scan Result</h2>
+            <p class="note" style="margin-top:0;">
+                Findings come from the upstream scanner. Every finding is a heuristic match, not a confirmed
+                vulnerability, and the risk score is a prioritisation aid rather than a security metric.
+            </p>
+            <h3>Summary</h3>
+            <div class="summary-grid" id="scan-summary"></div>
+            <h3>Findings</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Severity</th><th>Rule</th><th>File</th><th>Line</th><th>Description</th><th>Recommendation</th></tr></thead>
+                    <tbody id="findings-body"></tbody>
+                </table>
+            </div>
+            <div id="scan-notes"></div>
+
+            <h3>Skipped Files</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>File</th><th>Reason</th></tr></thead>
+                    <tbody id="skipped-body"></tbody>
+                </table>
+            </div>
+
+            <h3>Download Report</h3>
+            <div class="actions" style="margin:.5rem 0 0;">
+                <button id="download-json" disabled>Download JSON Report</button>
+            </div>
+            <p class="note">
+                The report is produced in your browser by the upstream report generator and saved straight to your
+                device. It contains rule IDs, severities, file paths, line numbers and findings &mdash; never file
+                contents.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Detection Rules</h2>
+            <p class="note" style="margin-top:0;">
+                The upstream scanner matches four case-insensitive regular expressions. These are the same rules,
+                with the same severities, that the command-line tool applies.
+            </p>
+            <ul class="rules">
+                <li><span class="badge unsafe">HIGH</span><span><code>PHP001</code> &mdash; <code>eval()</code></span></li>
+                <li><span class="badge unsafe">HIGH</span><span><code>PHP002</code> &mdash; <code>unserialize()</code></span></li>
+                <li><span class="badge warn">MEDIUM</span><span><code>PHP003</code> &mdash; <code>shell_exec()</code>, <code>exec()</code>, <code>system()</code>, <code>passthru()</code></span></li>
+                <li><span class="badge warn">MEDIUM</span><span><code>PHP004</code> &mdash; <code>base64_decode()</code></span></li>
+            </ul>
+        </section>
+
+        <div class="limitations">
+            <h3>&#9888;&#65039; Limitations</h3>
+            <ul>
+                <li>The scanner uses regular-expression heuristics. It is <strong>not a PHP parser</strong>: it cannot
+                    understand strings, comments, or obfuscation, so it produces both false positives and false
+                    negatives.</li>
+                <li>A match, or a non-zero risk score, does not prove that a vulnerability exists. The risk score only
+                    sums severity weights (info 0, low 1, medium 3, high 6, critical 10) to help prioritise review.</li>
+                <li>No uploaded PHP code is ever executed, imported, or served. Files are read as plain text only.</li>
+                <li>The command-line tool scans a directory. This demo accepts a ZIP archive or a set of PHP files
+                    instead, because a browser cannot read a local directory; the archive safety check and the
+                    per-file scan limits are applied by the demo.</li>
+                <li>Where the command-line tool aborts the whole scan when a file is unreadable, too large, or not
+                    valid UTF-8, this demo records that file as skipped and continues with the remaining files.</li>
+                <li>Plugin metadata checks, network behaviour checks and any other analysis outside the four regex
+                    rules are not part of this demo.</li>
+                <li>The first load downloads the Pyodide runtime (tens of megabytes) and may take around 30 seconds.
+                    Large archives can exceed browser memory limits.</li>
+            </ul>
+        </div>
+    </main>
+    <footer><p>All analysis performed locally in your browser.</p></footer>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -29,6 +29,37 @@ A professional, responsive portfolio website built with **vanilla HTML, CSS, and
 4. **Services** — Web Application Security Assessment, Authorized VAPT, WordPress Security, WordPress Malware Removal, WordPress Migration
 5. **Contact** — Fiverr and GitHub links
 
+## Live Demos
+
+Two of the tools are also published as browser demos that run entirely in the
+visitor's browser. The demos are static folders served by GitHub Pages from
+this repository.
+
+| Demo | URL | Runs |
+|---|---|---|
+| WP Forensics &amp; Recovery Assistant | https://samihathecss.github.io/demos/wp-forensics/ | The upstream `wp_forensics` package |
+| WP Plugin Risk &amp; Hardening Auditor | https://samihathecss.github.io/demos/wp-plugin-auditor/ | The upstream `wp_plugin_auditor` package |
+
+Both demos use [Pyodide 0.26.4](https://pyodide.org/) and
+[JSZip 3.10.1](https://stuk.github.io/jszip/) and contain a verbatim copy of
+the corresponding upstream Python package, so the analysis and the reports
+are produced by the real project code.
+
+**Privacy.** There is no upload endpoint and no server-side analysis. The
+selected archives and PHP files are read inside the visitor's browser, the
+uploaded PHP is never executed, and the temporary files are deleted after
+every run. The only outbound requests are the two public CDN scripts, the
+vendored Python modules served from this repository, and — in the core
+integrity check only — a request to `api.wordpress.org` carrying the
+WordPress version and locale.
+
+**Limitations.** The browser demos are not the full command-line tools. The
+forensics core check is partial (it compares only the files in the official
+WordPress.org checksum set), and the plugin auditor uses regular-expression
+heuristics rather than a PHP parser, so both can produce false positives and
+false negatives. Each demo page documents its own limitations, safety limits
+and the upstream commit it was vendored from.
+
 ## File Structure
 
 ```
@@ -36,7 +67,20 @@ samihathecss.github.io-main/
 ├── index.html          # Main HTML structure and all sections
 ├── styles.css          # All styling (dark navy theme, responsive layout)
 ├── app.js              # Vanilla JS (navigation, scroll animations)
-└── README.md           # This file
+├── README.md           # This file
+└── demos/
+    ├── wp-forensics/           # Browser demo of the forensics tool
+    │   ├── index.html
+    │   ├── app.js
+    │   ├── README.md
+    │   ├── VENDORED.md
+    │   └── wp_forensics/       # Upstream Python package, copied verbatim
+    └── wp-plugin-auditor/      # Browser demo of the plugin auditor
+        ├── index.html
+        ├── app.js
+        ├── README.md
+        ├── VENDORED.md
+        └── wp_plugin_auditor/  # Upstream Python package, copied verbatim
 ```
 
 ## Local Preview
@@ -64,6 +108,12 @@ This site is designed for **GitHub Pages** hosting:
 3. The site will be available at `https://samihathecss.github.io/`
 
 No configuration or build tools are needed — GitHub Pages serves static HTML, CSS, and JS directly.
+
+The two browser demos under `demos/` are published the same way: they are
+plain folders in the `main` branch, so they appear at
+`https://samihathecss.github.io/demos/wp-forensics/` and
+`https://samihathecss.github.io/demos/wp-plugin-auditor/` with no build step,
+no server and no configuration.
 
 ## Contact
 

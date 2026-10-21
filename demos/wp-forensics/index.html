@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Forensics &amp; Recovery Assistant - Browser Demo</title>
+    <meta name="description" content="Browser demo of the WP Forensics &amp; Recovery Assistant. Runs the project's own Python engine locally in your browser.">
+    <style>
+        :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text-muted:#94a3b8; --border:#334155; --accent:#3b82f6; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#06b6d4; }
+        *{box-sizing:border-box;}
+        body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Ubuntu,Cantarell,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:var(--text);line-height:1.6;min-height:100vh;}
+        header{padding:2rem 1rem 1rem;text-align:center;border-bottom:1px solid var(--border);}
+        header h1{margin:0 0 .5rem;font-size:1.8rem;font-weight:600;}
+        header p{margin:0;color:var(--text-muted);font-size:.9rem;}
+        main{max-width:1100px;margin:0 auto;padding:2rem 1rem;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:2rem;}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;box-shadow:0 4px 6px rgba(0,0,0,.3);}
+        .card h2{margin:0 0 1rem;font-size:1.2rem;font-weight:600;}
+        .upload-area{border:2px dashed var(--border);border-radius:6px;padding:1.5rem;text-align:center;transition:.2s ease;cursor:pointer;background:rgba(59,130,246,.05);}
+        .upload-area:hover,.upload-area.dragover{border-color:var(--accent);background:rgba(59,130,246,.1);}
+        .upload-area:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+        input[type=file]{display:none;}
+        .upload-label{display:inline-block;padding:.5rem 1rem;background:var(--accent);color:white;border-radius:4px;cursor:pointer;font-weight:500;margin-bottom:.5rem;}
+        .file-info{margin-top:.75rem;font-size:.875rem;color:var(--text-muted);word-break:break-all;}
+        button{padding:.625rem 1.25rem;background:var(--accent);color:white;border:none;border-radius:4px;font-size:.9rem;font-weight:500;cursor:pointer;}
+        button:disabled{opacity:.5;cursor:not-allowed;}
+        .btn-secondary{background:var(--border);}
+        .actions{display:flex;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+        .status{padding:1rem;border-radius:6px;border:1px solid var(--border);background:rgba(148,163,184,.1);margin:1rem 0;font-size:.9rem;word-break:break-word;}
+        .status.success{border-color:var(--success);background:rgba(16,185,129,.1);color:#86efac;}
+        .status.warning{border-color:var(--warning);background:rgba(245,158,11,.1);color:#fbbf24;}
+        .status.danger{border-color:var(--danger);background:rgba(239,68,68,.1);color:#fca5a5;}
+        .status.info{border-color:var(--info);background:rgba(6,182,212,.1);color:#67e8f9;}
+        .privacy{background:rgba(16,185,129,.1);border:1px solid var(--success);border-radius:6px;padding:1rem;margin:0 0 1.5rem;font-size:.9rem;color:#a7f3d0;}
+        .privacy strong{color:#d1fae5;}
+        .limits{list-style:none;margin:0;padding:0;font-size:.875rem;}
+        .limits li{padding:.5rem 0;border-bottom:1px dashed rgba(148,163,184,.25);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+        .limits li:last-child{border-bottom:none;}
+        .limits .value{color:#cbd5e1;font-family:ui-monospace,Menlo,Consolas,monospace;}
+        .note{color:var(--text-muted);font-size:.8rem;margin:.75rem 0 0;}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin:1rem 0;}
+        .summary-item{padding:.75rem;background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:4px;text-align:center;}
+        .summary-item .count{display:block;font-size:1.4rem;font-weight:600;margin-bottom:.25rem;}
+        .summary-item .label{display:block;font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+        .table-wrapper{overflow-x:auto;border:1px solid var(--border);border-radius:6px;margin:1rem 0;}
+        table{width:100%;border-collapse:collapse;font-size:.8rem;}
+        thead{background:rgba(15,23,42,.7);}
+        th,td{padding:.5rem;text-align:left;border:1px solid var(--border);vertical-align:top;}
+        th{font-weight:600;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+        td.path{word-break:break-all;min-width:220px;}
+        .badge{display:inline-block;padding:.125rem .5rem;border-radius:12px;font-size:.72rem;font-weight:500;white-space:nowrap;}
+        .badge.safe{background:rgba(16,185,129,.2);color:#86efac;}
+        .badge.unsafe{background:rgba(239,68,68,.2);color:#fca5a5;}
+        .badge.warn{background:rgba(245,158,11,.2);color:#fbbf24;}
+        .badge.info{background:rgba(6,182,212,.2);color:#67e8f9;}
+        .badge.neutral{background:rgba(148,163,184,.2);color:#cbd5e1;}
+        .badge.critical{background:rgba(239,68,68,.35);color:#fecaca;}
+        .badge.high{background:rgba(249,115,22,.25);color:#fdba74;}
+        .badge.medium{background:rgba(245,158,11,.2);color:#fbbf24;}
+        .badge.low{background:rgba(6,182,212,.2);color:#67e8f9;}
+        .sub{color:var(--text-muted);font-size:.72rem;word-break:break-all;}
+        .notes{margin:.5rem 0 0;padding-left:1.25rem;font-size:.85rem;}
+        .notes li{margin-bottom:.35rem;}
+        .toggle{display:flex;align-items:flex-start;gap:.5rem;font-size:.85rem;color:var(--text-muted);margin-top:.75rem;cursor:pointer;}
+        .toggle input{width:auto;margin:.15rem 0 0;flex:none;}
+        .limitations{background:rgba(245,158,11,.1);border:1px solid var(--warning);border-radius:6px;padding:1rem;margin:1.5rem 0;}
+        .limitations h3{margin:0 0 .5rem;color:#fbbf24;}
+        .limitations ul{margin:0;padding-left:1.25rem;}
+        .limitations li{margin-bottom:.35rem;font-size:.875rem;}
+        footer{text-align:center;color:var(--text-muted);font-size:.8rem;padding:1.5rem 1rem 2rem;}
+        @media (max-width:480px){
+            header h1{font-size:1.4rem;}
+            .card{padding:1.25rem;}
+            .upload-area{padding:1.25rem .75rem;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WP Forensics &amp; Recovery Assistant</h1>
+        <p>Browser Demo &mdash; the project's own Python engine, running locally in your browser</p>
+    </header>
+    <main>
+        <div class="privacy" role="note">
+            <strong>Local processing only.</strong> Your backup ZIP is read inside your own browser using WebAssembly
+            (Pyodide). No backup, PHP source, file path, or scan result is ever uploaded to a server. The only network
+            requests this page makes are to download the public Pyodide and JSZip libraries, and later to fetch
+            official WordPress.org core checksums (a version number only, never your files).
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Backup ZIP</h2>
+                <div class="upload-area" id="upload-area" role="button" tabindex="0" aria-label="Choose a WordPress backup ZIP archive">
+                    <label class="upload-label" for="zip-input">Choose ZIP</label>
+                    <div>or drag and drop</div>
+                    <div class="file-info" id="file-info">No file selected</div>
+                </div>
+                <input type="file" id="zip-input" accept=".zip,application/zip,application/x-zip-compressed">
+                <p class="note">A WordPress site or backup archive. Nothing is extracted until the archive passes the safety checks.</p>
+            </section>
+
+            <section class="card">
+                <h2>Safety Limits</h2>
+                <ul class="limits">
+                    <li><span>Maximum upload size</span><span class="value">25 MB</span></li>
+                    <li><span>Maximum uncompressed size</span><span class="value">50 MB</span></li>
+                    <li><span>Maximum archive entries</span><span class="value">2,000</span></li>
+                    <li><span>Maximum files scanned</span><span class="value">1,000</span></li>
+                    <li><span>Maximum size per file</span><span class="value">5 MB</span></li>
+                    <li><span>Maximum compression ratio</span><span class="value">100:1</span></li>
+                </ul>
+                <p class="note">An archive that exceeds any limit is rejected before a single entry is extracted.</p>
+            </section>
+        </div>
+
+        <div class="actions">
+            <button id="inspect-btn" disabled>Inspect ZIP</button>
+            <button id="scan-btn" disabled>Scan Backup</button>
+            <button id="verify-btn" disabled>Verify Core</button>
+            <button id="clear-btn" class="btn-secondary">Clear</button>
+        </div>
+        <p class="note" id="feature-note">
+            Archive inspection, backup scanning, downloadable JSON/HTML reports, and snapshot comparison are
+            available. Partial WordPress core integrity verification is available in this demo: it compares the
+            files listed in the official WordPress.org checksum set against the extracted archive. It does not
+            cover plugins, themes, uploads, or any other file outside that set.
+        </p>
+
+        <div id="status" class="status" role="status" aria-live="polite" style="display:none;"></div>
+
+        <section class="card" id="results-section" style="display:none;">
+            <h2>Archive Inspection</h2>
+            <p class="note" style="margin-top:0;">The archive was inspected by the upstream <code>inspect_zip()</code>
+                implementation running locally. No entry was extracted and no file content was read.</p>
+            <h3>Summary</h3>
+            <div class="summary-grid" id="summary-grid"></div>
+            <h3>Entries</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Entry</th><th>Size</th><th>Compressed</th><th>Safe</th><th>Symlink</th><th>Traversal</th><th>Duplicate</th><th>Status</th></tr></thead>
+                    <tbody id="entries-body"></tbody>
+                </table>
+            </div>
+            <div id="inspection-notes"></div>
+        </section>
+
+        <section class="card" id="scan-section" style="display:none;">
+            <h2>Backup Scan</h2>
+            <p class="note" style="margin-top:0;">
+                Findings come from the upstream <code>indicators.scan_directory()</code> implementation. PHP files are read
+                as plain text and are never executed. Every finding is an indicator with status
+                <code>suspicious</code> &mdash; none of them is confirmed malware.
+            </p>
+            <h3>Summary</h3>
+            <div class="summary-grid" id="scan-summary"></div>
+            <h3>Findings</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Severity</th><th>Confidence</th><th>Category</th><th>Indicator</th><th>File</th><th>Line</th><th>Evidence</th></tr></thead>
+                    <tbody id="findings-body"></tbody>
+                </table>
+            </div>
+            <div id="scan-notes"></div>
+
+            <h3>Download Report</h3>
+            <div class="actions" style="margin:.5rem 0 0;">
+                <button id="download-json" disabled>Download JSON Report</button>
+                <button id="download-html" disabled>Download HTML Report</button>
+            </div>
+            <label class="toggle" for="omit-evidence">
+                <input type="checkbox" id="omit-evidence">
+                <span>Omit evidence snippets from downloaded reports</span>
+            </label>
+            <p class="note">
+                Reports are generated in your browser and saved straight to your device. The HTML report is a download
+                only &mdash; it is never opened automatically and never inserted into this page. Evidence from sensitive
+                files (wp-config.php, .env, *.pem, *.key, id_rsa, names containing &quot;credentials&quot;, and *.sql) is
+                always redacted.
+            </p>
+        </section>
+
+        <section class="card" id="verify-section" style="display:none;">
+            <h2>Core Integrity Verification <span class="badge warn">Partial &mdash; browser based</span></h2>
+            <p class="note" style="margin-top:0;">
+                The archive is extracted into a temporary in-memory directory, the official checksums for the
+                detected WordPress version and locale are fetched by your browser from
+                <code>api.wordpress.org</code>, and the extracted files are compared with the upstream
+                <code>core_verify.verify_core()</code> implementation. Only the version, the locale, and the
+                official checksum list ever leave your browser &mdash; no file, path, or hash is sent anywhere.
+            </p>
+            <p class="note">
+                <strong>Partial verification.</strong> Only files that appear in the official WordPress.org
+                checksum set are compared. Plugins, themes, uploads, <code>wp-content</code>, and any other file
+                outside that set are not checked. A result without mismatches is therefore not a proof that the
+                installation is free of injected code.
+            </p>
+            <h3>Summary</h3>
+            <div class="summary-grid" id="verify-summary"></div>
+            <h3>Files that did not match</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>File</th><th>Status</th><th>Expected SHA-256</th><th>Actual SHA-256</th></tr></thead>
+                    <tbody id="verify-files-body"></tbody>
+                </table>
+            </div>
+            <div id="verify-notes"></div>
+        </section>
+
+        <section class="card" id="compare-panel">
+            <h2>Snapshot Comparison</h2>
+            <p class="note" style="margin-top:0;">
+                Compare two backup archives to see which files were added, removed, modified, or left unchanged.
+                Both archives pass exactly the same safety checks as the single-archive scan, and nothing is extracted
+                unless both of them are accepted.
+            </p>
+            <div class="grid" style="margin-bottom:0;">
+                <div>
+                    <h3 style="font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 .5rem;">Snapshot A &mdash; older backup</h3>
+                    <div class="upload-area" id="compare-a-area" role="button" tabindex="0" aria-label="Choose the Snapshot A ZIP archive">
+                        <label class="upload-label" for="compare-a-input">Choose Snapshot A</label>
+                        <div>or drag and drop</div>
+                        <div class="file-info" id="compare-a-info">No file selected</div>
+                    </div>
+                    <input type="file" id="compare-a-input" accept=".zip,application/zip,application/x-zip-compressed">
+                </div>
+                <div>
+                    <h3 style="font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 .5rem;">Snapshot B &mdash; newer backup</h3>
+                    <div class="upload-area" id="compare-b-area" role="button" tabindex="0" aria-label="Choose the Snapshot B ZIP archive">
+                        <label class="upload-label" for="compare-b-input">Choose Snapshot B</label>
+                        <div>or drag and drop</div>
+                        <div class="file-info" id="compare-b-info">No file selected</div>
+                    </div>
+                    <input type="file" id="compare-b-input" accept=".zip,application/zip,application/x-zip-compressed">
+                </div>
+            </div>
+            <div class="actions">
+                <button id="compare-btn" disabled>Compare Snapshots</button>
+            </div>
+            <p class="note">
+                Files are matched by relative path and SHA-256 hash. File contents are never shown and uploaded PHP
+                files are never executed.
+            </p>
+        </section>
+
+        <section class="card" id="compare-results-section" style="display:none;">
+            <h2>Snapshot Comparison Result</h2>
+            <p class="note" style="margin-top:0;">
+                Produced by the upstream <code>compare.compare_snapshots()</code> implementation running locally.
+                Snapshot A is the older backup and Snapshot B the newer one, so a file that only exists in Snapshot B
+                is reported as added and a file that only exists in Snapshot A is reported as removed.
+            </p>
+            <h3>Summary</h3>
+            <div class="summary-grid" id="compare-summary"></div>
+            <h3>Files</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Status</th><th>Path</th><th>Snapshot A SHA-256</th><th>Snapshot B SHA-256</th></tr></thead>
+                    <tbody id="compare-entries-body"></tbody>
+                </table>
+            </div>
+            <div id="compare-notes"></div>
+
+            <h3>Download Result</h3>
+            <div class="actions" style="margin:.5rem 0 0;">
+                <button id="download-compare-json" disabled>Download Comparison JSON</button>
+            </div>
+            <p class="note">
+                The JSON file is produced in your browser by the upstream report generator and saved straight to your
+                device. It contains file paths and hashes only, never file contents.
+            </p>
+        </section>
+
+        <div class="limitations">
+            <h3>&#9888;&#65039; Browser-Specific Limitations</h3>
+            <ul>
+                <li>Runs entirely in your browser via Pyodide; no files are uploaded to any server.</li>
+                <li>The first load downloads the Pyodide runtime (tens of megabytes) and may take around 30 seconds.</li>
+                <li>Large archives can exceed browser memory limits; use the command-line tool for very large backups.</li>
+                <li>Only ZIP archives you explicitly select can be analysed &mdash; the demo cannot read a local directory.</li>
+                <li>Snapshot comparison needs two ZIP archives; both are read into the in-memory filesystem, compared by path and SHA-256 hash, and deleted afterwards.</li>
+                <li>Files that could not be hashed in one of the two snapshots are reported as limitations instead of being classified as added or removed.</li>
+                <li>Symlink detection is stricter than upstream: the upstream <code>is_symlink()</code> helper matches only the exact mode <code>0o120000</code>, so this demo also applies the standard <code>S_IFLNK</code> type-bit mask and rejects symlinks that carry ordinary permission bits.</li>
+                <li>Findings are indicators that require manual review. A clean scan does not prove a site is free of malware.</li>
+                <li>Core integrity verification is partial and browser based. It compares only the files listed in the official WordPress.org checksum set for the detected version and locale; every other file in the archive is ignored, and a version that WordPress.org does not publish checksums for cannot be verified at all.</li>
+                <li>Core verification needs network access to <code>api.wordpress.org</code>. The request sends the version and locale only, never file names, hashes, or file contents, and the comparison itself runs locally.</li>
+            </ul>
+        </div>
+    </main>
+    <footer><p>All analysis performed locally in your browser.</p></footer>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
